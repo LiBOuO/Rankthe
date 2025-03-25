@@ -14,7 +14,7 @@ class LocalCSVController(FileController):
     def getFile(self):
         if self.df is None:
             return "⚠️ CSV 未建立"
-        return self.df.to_csv(index=False)
+        return self.df
 
     def loadFile(self):
         try:
@@ -37,3 +37,4 @@ class LocalCSVController(FileController):
     def _saveFile(self):
         if self.df is not None:
             self.df.to_csv(self.file_path, index=False)
+            

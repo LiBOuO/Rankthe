@@ -1,6 +1,9 @@
-from src.factory import FileControllerFactory
+import sys
+from PyQt6.QtWidgets import QApplication
+from src.gui.local_file_viewer import LocalFileViewer  
 
-fileController = FileControllerFactory.get_controller("local")
-fileController.createCSV(["a", "b", "c"])
-fileController.addRowAndReturnResult(["1", "2", "3"])
-print(fileController.getFile())
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    localFileViewer = LocalFileViewer()
+    localFileViewer.show()
+    sys.exit(app.exec())
