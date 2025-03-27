@@ -1,139 +1,92 @@
 import sys
 import pandas as pd
 from PyQt6.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QPushButton, QFileDialog, 
-    QTableWidget, QTableWidgetItem, QHBoxLayout, QLabel, QLineEdit
+    QApplication, QWidget, QVBoxLayout, QPushButton, QFileDialog,
+    QTableWidget, QHBoxLayout, QLabel, QLineEdit, QTableWidgetItem
 )
 from src.controllers.local_file_controller import LocalCSVController
-from src.gui.local_file.table_search_replace import TableSearchReplace
-from src.gui.local_file.input_title import LocalFileInputTitle
+from src.gui.local_file.local_file_logic import LocalFileLogic
 
 class LocalFileViewer(QWidget):
-    """本地 CSV 檢視器（含 Excel 搜尋功能）"""
-
     def __init__(self):
         super().__init__()
 
         self.setWindowTitle("CSV Viewer")
         self.setGeometry(100, 100, 800, 600)
+
         layout = QVBoxLayout()
+        self.setLayout(layout)
 
-        self.localFileController = LocalCSVController()
-
-        add_file_layout = QHBoxLayout()
-        # 新增 CSV 按鈕
-        self.create_button = QPushButton("新增 CSV")
-        self.create_button.clicked.connect(self.create_csv)
-        add_file_layout.addWidget(self.create_button)
-
-        # 匯入 CSV 按鈕
-        self.load_button = QPushButton("匯入 CSV")
-        self.load_button.clicked.connect(self.load_csv)
-        add_file_layout.addWidget(self.load_button)
-        
-        layout.addLayout(add_file_layout)
-
-        # 搜尋區域
-        search_layout = QHBoxLayout()
-
+        # 建立 UI 元件
+        self.table = QTableWidget()
         self.search_box = QLineEdit()
+        self.replace_box = QLineEdit()
+        self.add_row_box = QLineEdit()
+
+        self.controller = LocalCSVController()
+        self.logic = LocalFileLogic(
+            table=self.table,
+            controller=self.controller,
+            search_box=self.search_box,
+            replace_box=self.replace_box,
+            add_row_box=self.add_row_box
+        )
+
+        # ===== 檔案按鈕 =====
+        file_layout = QHBoxLayout()
+
+        create_btn = QPushButton("新增 CSV")
+        create_btn.clicked.connect(self.logic.create_csv)
+        file_layout.addWidget(create_btn)
+
+        load_btn = QPushButton("匯入 CSV")
+        load_btn.clicked.connect(self.logic.load_csv)
+        file_layout.addWidget(load_btn)
+
+        layout.addLayout(file_layout)
+
+        # ===== 搜尋與替換 =====
+        search_layout = QHBoxLayout()
         self.search_box.setPlaceholderText("🔍 查找...")
+        self.replace_box.setPlaceholderText("輸入替換文字")
+
         search_layout.addWidget(QLabel("查找:"))
         search_layout.addWidget(self.search_box)
 
-        self.search_button = QPushButton("搜尋")
-        self.search_button.clicked.connect(self.search)
-        search_layout.addWidget(self.search_button)
+        search_btn = QPushButton("搜尋")
+        search_btn.clicked.connect(self.logic.search)
+        search_layout.addWidget(search_btn)
 
-        self.next_button = QPushButton("下一個")
-        self.next_button.clicked.connect(self.find_next)
-        search_layout.addWidget(self.next_button)
+        prev_btn = QPushButton("上一個")
+        prev_btn.clicked.connect(self.logic.find_previous)
+        search_layout.addWidget(prev_btn)
 
-        self.prev_button = QPushButton("上一個")
-        self.prev_button.clicked.connect(self.find_previous)
-        search_layout.addWidget(self.prev_button)
+        next_btn = QPushButton("下一個")
+        next_btn.clicked.connect(self.logic.find_next)
+        search_layout.addWidget(next_btn)
 
-        self.replace_box = QLineEdit()
-        self.replace_box.setPlaceholderText("輸入替換文字")
         search_layout.addWidget(QLabel("替換:"))
         search_layout.addWidget(self.replace_box)
 
-        self.replace_button = QPushButton("替換")
-        self.replace_button.clicked.connect(self.replace)
-        search_layout.addWidget(self.replace_button)
+        replace_btn = QPushButton("替換")
+        replace_btn.clicked.connect(self.logic.replace)
+        search_layout.addWidget(replace_btn)
 
-        self.replace_all_button = QPushButton("全部替換")
-        self.replace_all_button.clicked.connect(self.replace_all)
-        search_layout.addWidget(self.replace_all_button)
+        replace_all_btn = QPushButton("全部替換")
+        replace_all_btn.clicked.connect(self.logic.replace_all)
+        search_layout.addWidget(replace_all_btn)
 
         layout.addLayout(search_layout)
 
-        # 表格
-        self.table = QTableWidget()
+        # ===== 表格顯示區 =====
         layout.addWidget(self.table)
-        self.setLayout(layout)
-        
-        # 加入資料功能
-        add_row_layout = QHBoxLayout()
-        self.add_row_box = QLineEdit()
+
+        # ===== 新增資料 =====
+        row_layout = QHBoxLayout()
         self.add_row_box.setPlaceholderText("新增資料，以逗號分隔")
-        add_row_layout.addWidget(self.add_row_box)
-        
-        self.add_row_button = QPushButton("新增資料")
-        self.add_row_button.clicked.connect(self.add_row)
-        add_row_layout.addWidget(self.add_row_button)
-        layout.addLayout(add_row_layout)
-        
+        add_row_btn = QPushButton("新增資料")
+        add_row_btn.clicked.connect(self.logic.add_row)
+        row_layout.addWidget(self.add_row_box)
+        row_layout.addWidget(add_row_btn)
 
-        # 搜尋功能
-        self.search_replace = TableSearchReplace(self.table)
-
-    def load_csv(self):
-        """選擇本地 CSV 並顯示"""
-        file_path, _ = QFileDialog.getOpenFileName(self, "選擇 CSV 檔案", "", "CSV Files (*.csv)")
-        if file_path:
-            df = pd.read_csv(file_path)
-            self.display_csv(df)
-
-    def display_csv(self, df: pd.DataFrame):
-            """更新 UI 顯示 CSV 資料"""
-            self.table.setRowCount(df.shape[0])
-            self.table.setColumnCount(df.shape[1])
-            self.table.setHorizontalHeaderLabels(df.columns)
-
-            for row in range(df.shape[0]):
-                for col in range(df.shape[1]):
-                    self.table.setItem(row, col, QTableWidgetItem(str(df.iat[row, col])))
-
-    def search(self):
-        """執行搜尋"""
-        self.search_replace.search(self.search_box.text())
-
-    def find_next(self):
-        match = self.search_replace.find_next()
-        if match:
-            self.table.scrollToItem(self.table.item(*match))
-
-    def find_previous(self):
-        match = self.search_replace.find_previous()
-        if match:
-            self.table.scrollToItem(self.table.item(*match))
-
-    def replace(self):
-        self.search_replace.replace(self.replace_box.text())
-
-    def replace_all(self):
-        self.search_replace.replace_all(self.replace_box.text())
-        
-    def create_csv(self):
-        self.input_title_dialog = LocalFileInputTitle(self)
-        self.input_title_dialog.exec()
-        title = self.input_title_dialog.get_input_text().split(",")
-        self.localFileController.createCSV(title)
-        print(self.localFileController.getFile())
-        self.display_csv(self.localFileController.getFile())
-        
-    def add_row(self):
-        row = list(self.add_row_box.text().split(","))
-        print(self.localFileController.addRowAndReturnResult(row))
-        self.display_csv(self.localFileController.getFile())
+        layout.addLayout(row_layout)
