@@ -90,3 +90,12 @@ class LocalFileViewer(QWidget):
         row_layout.addWidget(add_row_btn)
 
         layout.addLayout(row_layout)
+        
+        # ===== 顯示排行按鈕 =====
+        show_rank_btn_layout = QHBoxLayout()
+
+        show_rank_btn = QPushButton("顯示排行榜")
+        show_rank_btn.clicked.connect(self.logic.show_rank_window)
+        show_rank_btn_layout.addWidget(show_rank_btn)
+        
+        layout.addLayout(show_rank_btn_layout)

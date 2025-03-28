@@ -19,3 +19,8 @@ class FileController(ABC):
         pandasfilesort = PandasFileSort(self.getFile())
         pandasfilesort.sort(by, ascending)
         self.df = pandasfilesort.sort(by, ascending)
+        
+    def sumAndsort(self, by: str, ascending: bool):
+        pandasfilesort = PandasFileSort(self.getFile())
+        pandasfilesort.sumAndsort(by, ascending)
+        return pandasfilesort.sumAndsort(by, ascending)

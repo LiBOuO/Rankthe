@@ -3,6 +3,7 @@ import pandas as pd
 from PyQt6.QtWidgets import QTableWidgetItem, QFileDialog
 from src.gui.local_file.table_search_replace import TableSearchReplace
 from src.gui.local_file.input_title import LocalFileInputTitle
+from src.gui.rankWindow import RankWindow
 
 class LocalFileLogic:
     def __init__(self, table, controller, search_box, replace_box, add_row_box):
@@ -11,7 +12,7 @@ class LocalFileLogic:
         self.search_box = search_box
         self.replace_box = replace_box
         self.add_row_box = add_row_box
-
+        self.df = None
         self.search_replace = TableSearchReplace(self.table)
 
     def load_csv(self):
@@ -19,8 +20,8 @@ class LocalFileLogic:
             None, "選擇 CSV 檔案", "", "CSV Files (*.csv)"
         )
         if file_path:
-            df = pd.read_csv(file_path)
-            self.display_csv(df)
+            self.df = pd.read_csv(file_path)
+            self.display_csv(self.df)
 
     def create_csv(self):
         dialog = LocalFileInputTitle()
@@ -61,3 +62,7 @@ class LocalFileLogic:
         for row in range(df.shape[0]):
             for col in range(df.shape[1]):
                 self.table.setItem(row, col, QTableWidgetItem(str(df.iat[row, col])))
+                
+    def show_rank_window(self):
+        self.popup = RankWindow()  # 要設成 self.popup 才不會被自動釋放
+        self.popup.show() # 顯示新視窗
