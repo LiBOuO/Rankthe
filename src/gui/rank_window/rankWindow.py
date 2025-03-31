@@ -8,8 +8,8 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton
 from PyQt6.QtCore import Qt, QTimer
-from rank_table_widget import RankTableWidget
-from rank_background import BackgroundWidget
+from src.gui.rank_window.rank_table_widget import RankTableWidget
+from src.gui.rank_window.rank_background import BackgroundWidget
 
 class RankWindow(BackgroundWidget):
     def __init__(self):
@@ -31,7 +31,7 @@ class RankWindow(BackgroundWidget):
 
         # 新增資料區域
         self.input_box = QLineEdit()
-        self.input_box.setPlaceholderText("請輸入資料，例如：玩家20,69")
+        self.input_box.setPlaceholderText("請輸入資料，例如：player1, 100")
         self.add_button = QPushButton("新增資料")
         self.add_button.clicked.connect(self.add_row)
 
@@ -60,9 +60,3 @@ class RankWindow(BackgroundWidget):
             scroll.setValue(0)
         else:
             scroll.setValue(scroll.value() + 1)
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = RankWindow()
-    window.show()
-    sys.exit(app.exec())

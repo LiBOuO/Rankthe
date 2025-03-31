@@ -1,9 +1,13 @@
 import sys
 from PyQt6.QtWidgets import QApplication
-from src.gui.local_file.local_file_viewer import LocalFileViewer  
+from src.gui.file_set_window.file_viewer import FileViewer  
+
+from src.file_controller_factory import FileControllerFactory
+print(type(FileControllerFactory.get_controller("local")))
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    viewer = LocalFileViewer()
+    viewer = FileViewer() 
     viewer.show()
-    sys.exit(app.exec())
+    sys.exit(app.exec()) 
