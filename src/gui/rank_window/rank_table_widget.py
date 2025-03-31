@@ -3,8 +3,9 @@ from PyQt6.QtCore import Qt
 import pandas as pd
 
 class RankTableWidget(QTableWidget):
-    def __init__(self):
+    def __init__(self, controller=None):
         super().__init__()
+        self.controller = controller
         self.setColumnCount(2)
         self.setShowGrid(False)
         self.setStyleSheet("""
@@ -53,10 +54,9 @@ class RankTableWidget(QTableWidget):
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
 
     def load_initial_data(self):
-        data = {
-            "名稱": [f"玩家{i+1}" for i in range(50)],
-            "分數": [100 - i for i in range(50)]
-        }
+        data = self.controller.getFile()
+        if data is None:
+            return
         df = pd.DataFrame(data)
 
         self.setRowCount(df.shape[0])

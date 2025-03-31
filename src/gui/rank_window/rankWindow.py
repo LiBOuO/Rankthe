@@ -12,17 +12,17 @@ from src.gui.rank_window.rank_table_widget import RankTableWidget
 from src.gui.rank_window.rank_background import BackgroundWidget
 
 class RankWindow(BackgroundWidget):
-    def __init__(self):
+    def __init__(self, controller):
         super().__init__("src/gui/background.jpeg")
         self.setWindowTitle("排行榜")
         self.resize(800, 600)
-
+        self.controller = controller
         # 主 layout
         main_layout = QVBoxLayout()
         self.setLayout(main_layout)
 
         # 建立表格
-        self.table = RankTableWidget()
+        self.table = RankTableWidget(self.controller)
         center_layout = QHBoxLayout()
         center_layout.addStretch(2)
         center_layout.addWidget(self.table, 6)

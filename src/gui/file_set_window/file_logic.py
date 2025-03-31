@@ -51,5 +51,6 @@ class FileLogic:
                 self.table.setItem(row, col, QTableWidgetItem(str(df.iat[row, col])))
 
     def show_rank_window(self):
-        self.popup = RankWindow()
+        self.popup = RankWindow(self.controller)  # 傳入 controller
         self.popup.show()
+

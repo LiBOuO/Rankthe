@@ -130,7 +130,7 @@ class FileViewer(QWidget):
             return
 
         self.controller = FileControllerFactory.get_controller("cloud", file_id=file_id)
-        self.logic = LocalFileLogic(table=self.table, controller=self.controller)
+        self.logic = FileLogic(table=self.table, controller=self.controller)
         self.logic.display_csv(self.controller.getFile())
 
     def handle_create_csv(self):
