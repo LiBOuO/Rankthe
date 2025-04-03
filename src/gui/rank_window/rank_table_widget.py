@@ -1,7 +1,6 @@
 from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem, QHeaderView
 from PyQt6.QtCore import Qt
 import pandas as pd
-
 class RankTableWidget(QTableWidget):
     def __init__(self, controller=None):
         super().__init__()
@@ -58,7 +57,8 @@ class RankTableWidget(QTableWidget):
         if data is None:
             return
         df = pd.DataFrame(data)
-
+        df = df.groupby(by=self.controller.getStrSortBy()).sum()
+        df = df.sort_values(by="score", ascending=False)
         self.setRowCount(df.shape[0])
         self.setHorizontalHeaderLabels(df.columns)
 

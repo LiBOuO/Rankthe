@@ -17,6 +17,9 @@ class RankWindow(BackgroundWidget):
         self.setWindowTitle("排行榜")
         self.resize(800, 600)
         self.controller = controller
+
+        # ✅ 監聽 controller 的 signal
+        self.controller.dataChanged.connect(self.sync_table)
         # 主 layout
         main_layout = QVBoxLayout()
         self.setLayout(main_layout)
@@ -51,7 +54,8 @@ class RankWindow(BackgroundWidget):
         self.timer.start(100)
 
     def add_row(self):
-        self.table.add_row_from_text(self.input_box.text())
+        self.controller.addRowAndReturnResult(list(self.input_box.text().split(",")))
+        self.table.load_initial_data()
         self.input_box.clear()
 
     def scroll_down(self):
@@ -60,3 +64,8 @@ class RankWindow(BackgroundWidget):
             scroll.setValue(0)
         else:
             scroll.setValue(scroll.value() + 1)
+            
+    def sync_table(self):
+        print(123)
+        self.table.load_initial_data()
+        

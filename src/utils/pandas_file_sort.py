@@ -9,5 +9,6 @@ class PandasFileSort:
     def sort(self, by: str, ascending: bool):
         return self.df.sort_values(by=by, ascending=ascending)
 
+
     def sumAndsort(self, by: str, ascending: bool):
         return self.df.groupby(by=by).sum().sort_values(by=by, ascending=ascending)

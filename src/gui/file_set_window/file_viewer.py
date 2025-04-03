@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QPushButton, QTableWidget,
     QHBoxLayout, QLabel, QLineEdit, QTableWidgetItem, QComboBox, QFileDialog
 )
+from src.gui.rank_window.rankWindow import RankWindow
 from src.gui.file_set_window.file_logic import FileLogic
 from src.file_controller_factory import FileControllerFactory
 
@@ -19,12 +20,14 @@ class FileViewer(QWidget):
 
         self.build_source_selector()
         self.build_table_ui()
-        self.build_search_replace_ui()
+        # self.build_search_replace_ui()
         self.build_add_row_ui()
         self.build_rank_button()
-
+        self.rank_window = None
+        self.controller = FileControllerFactory.get_controller("local")
+        self.controller.dataChanged.connect(self.sync_table)
         self.set_data_source("local")
-
+        
     def build_source_selector(self):
         selector_layout = QHBoxLayout()
 
@@ -49,39 +52,41 @@ class FileViewer(QWidget):
         self.table = QTableWidget()
         self.layout.addWidget(self.table)
 
-    def build_search_replace_ui(self):
-        search_layout = QHBoxLayout()
-        self.search_box = QLineEdit()
-        self.search_box.setPlaceholderText("🔍 查找...")
-        self.replace_box = QLineEdit()
-        self.replace_box.setPlaceholderText("輸入替換文字")
+    '''
+    # def build_search_replace_ui(self):
+    #     search_layout = QHBoxLayout()
+    #     self.search_box = QLineEdit()
+    #     self.search_box.setPlaceholderText("🔍 查找...")
+    #     self.replace_box = QLineEdit()
+    #     self.replace_box.setPlaceholderText("輸入替換文字")
 
-        search_layout.addWidget(QLabel("查找:"))
-        search_layout.addWidget(self.search_box)
-        search_btn = QPushButton("搜尋")
-        search_btn.clicked.connect(self.handle_search)
-        search_layout.addWidget(search_btn)
+    #     search_layout.addWidget(QLabel("查找:"))
+    #     search_layout.addWidget(self.search_box)
+    #     search_btn = QPushButton("搜尋")
+    #     search_btn.clicked.connect(self.handle_search)
+    #     search_layout.addWidget(search_btn)
 
-        prev_btn = QPushButton("上一個")
-        prev_btn.clicked.connect(lambda: self.logic.find_previous())
-        search_layout.addWidget(prev_btn)
+    #     prev_btn = QPushButton("上一個")
+    #     prev_btn.clicked.connect(lambda: self.logic.find_previous())
+    #     search_layout.addWidget(prev_btn)
 
-        next_btn = QPushButton("下一個")
-        next_btn.clicked.connect(lambda: self.logic.find_next())
-        search_layout.addWidget(next_btn)
+    #     next_btn = QPushButton("下一個")
+    #     next_btn.clicked.connect(lambda: self.logic.find_next())
+    #     search_layout.addWidget(next_btn)
 
-        search_layout.addWidget(QLabel("替換:"))
-        search_layout.addWidget(self.replace_box)
+    #     search_layout.addWidget(QLabel("替換:"))
+    #     search_layout.addWidget(self.replace_box)
 
-        replace_btn = QPushButton("替換")
-        replace_btn.clicked.connect(self.handle_replace)
-        search_layout.addWidget(replace_btn)
+    #     replace_btn = QPushButton("替換")
+    #     replace_btn.clicked.connect(self.handle_replace)
+    #     search_layout.addWidget(replace_btn)
 
-        replace_all_btn = QPushButton("全部替換")
-        replace_all_btn.clicked.connect(self.handle_replace_all)
-        search_layout.addWidget(replace_all_btn)
+    #     replace_all_btn = QPushButton("全部替換")
+    #     replace_all_btn.clicked.connect(self.handle_replace_all)
+    #     search_layout.addWidget(replace_all_btn)
 
-        self.layout.addLayout(search_layout)
+    #     self.layout.addLayout(search_layout)
+    '''
 
     def build_add_row_ui(self):
         row_layout = QHBoxLayout()
@@ -92,6 +97,21 @@ class FileViewer(QWidget):
         row_layout.addWidget(self.add_row_box)
         row_layout.addWidget(add_row_btn)
         self.layout.addLayout(row_layout)
+    
+    def build_sortBy(self):
+        strSort_layout = QHBoxLayout()
+
+        self.strSortByComboBox = QComboBox()
+        self.strSortByComboBox.addItems(lambda: self.controller.getFile().columns)
+
+        # 加入欄位到畫面
+        strSort_layout.addWidget(self.strSortByComboBox)
+        self.layout.addLayout(strSort_layout)
+
+        # 綁定欄位變化事件
+        self.strSortByComboBox.currentTextChanged.connect(
+            lambda text: self.controller.setStrSortBy(text)
+        )
 
     def build_rank_button(self):
         rank_layout = QHBoxLayout()
@@ -112,9 +132,7 @@ class FileViewer(QWidget):
         self.load_cloud_btn.setVisible(source_type == "cloud")
 
         if source_type == "local":
-            self.controller = FileControllerFactory.get_controller("local")
             self.logic = FileLogic(table=self.table, controller=self.controller)
-
             self.local_btns_layout = QHBoxLayout()
             create_btn = QPushButton("新增 CSV")
             create_btn.clicked.connect(self.handle_create_csv)
@@ -149,12 +167,29 @@ class FileViewer(QWidget):
         row = self.add_row_box.text().split(",")
         self.logic.add_row(row)
 
-    def handle_search(self):
-        keyword = self.search_box.text()
-        self.logic.search(keyword)
+    # def handle_search(self):
+    #     keyword = self.search_box.text()
+    #     self.logic.search(keyword)
 
-    def handle_replace(self):
-        self.logic.replace(self.replace_box.text())
+    # def handle_replace(self):
+    #     self.logic.replace(self.replace_box.text())
 
-    def handle_replace_all(self):
-        self.logic.replace_all(self.replace_box.text())
+    # def handle_replace_all(self):
+    #     self.logic.replace_all(self.replace_box.text())
+        
+    def build_rank_button(self):
+        rank_layout = QHBoxLayout()
+        show_rank_btn = QPushButton("顯示排行榜")
+        show_rank_btn.clicked.connect(self.handle_show_rank)
+        rank_layout.addWidget(show_rank_btn)
+        self.layout.addLayout(rank_layout)
+
+    def handle_show_rank(self):
+        if self.rank_window is None:
+            self.rank_window = RankWindow(self.controller)
+        self.rank_window.show()
+
+    def sync_table(self):
+        print(456)
+        self.logic.display_csv(self.controller.getFile())
+
