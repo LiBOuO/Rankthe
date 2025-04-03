@@ -50,3 +50,5 @@ class FileLogic:
             for col in range(df.shape[1]):
                 self.table.setItem(row, col, QTableWidgetItem(str(df.iat[row, col])))
 
+
+

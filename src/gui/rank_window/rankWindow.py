@@ -6,14 +6,15 @@
 # 👉 這裡先幫你生成 rank_window.py 的主程式框架：
 
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton
+from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton
 from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import QPixmap, QPainter
 from src.gui.rank_window.rank_table_widget import RankTableWidget
 from src.gui.rank_window.rank_background import BackgroundWidget
 
 class RankWindow(BackgroundWidget):
     def __init__(self, controller):
-        super().__init__("src/gui/background.jpeg")
+        super().__init__("src/gui/Background.png")
         self.setWindowTitle("排行榜")
         self.resize(800, 600)
         self.controller = controller
@@ -66,6 +67,10 @@ class RankWindow(BackgroundWidget):
             scroll.setValue(scroll.value() + 1)
             
     def sync_table(self):
-        print(123)
         self.table.load_initial_data()
-        
+
+    def update_background(self, image_path: str):
+        self.bg_pixmap = QPixmap(image_path)
+        self.update()  # 重新觸發 paintEvent
+
+

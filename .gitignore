@@ -1,4 +1,8 @@
 *.xml
+*.csv
+*.png
+*.jpg
+*.jpeg
 # 忽略 Python 編譯後的檔案
 __pycache__/
 *.pyc

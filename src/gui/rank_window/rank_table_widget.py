@@ -5,11 +5,12 @@ class RankTableWidget(QTableWidget):
     def __init__(self, controller=None):
         super().__init__()
         self.controller = controller
-        self.setColumnCount(2)
+        self.columnLength = len(self.controller.getFile().columns.tolist())
+        self.setColumnCount(self.columnLength)
         self.setShowGrid(False)
         self.setStyleSheet("""
             QTableWidget {
-                background-color: rgba(255, 255, 255, 150);
+                background-color: rgba(0, 0, 0, 128);
                 border: none;
                 font-size: 40px;
             }
@@ -46,19 +47,20 @@ class RankTableWidget(QTableWidget):
                 height: 0px;
             }
         """)
-
+        
         header = self.horizontalHeader()
         header.setStretchLastSection(True)
-        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        for i in range(self.columnLength):
+            header.setSectionResizeMode(i, QHeaderView.ResizeMode.Stretch)
 
     def load_initial_data(self):
         data = self.controller.getFile()
         if data is None:
             return
         df = pd.DataFrame(data)
-        df = df.groupby(by=self.controller.getStrSortBy()).sum()
-        df = df.sort_values(by="score", ascending=False)
+        df = df.groupby(by=self.controller.getStrSortBy()).sum().reset_index()
+        print(df)
+        # df = df.sort_values(by=self.controller.getStrSortBy(), ascending=False)
         self.setRowCount(df.shape[0])
         self.setHorizontalHeaderLabels(df.columns)
 
@@ -73,7 +75,7 @@ class RankTableWidget(QTableWidget):
     def add_row_from_text(self, text: str):
         if "," in text:
             parts = [s.strip() for s in text.split(",")]
-            if len(parts) == 2:
+            if len(parts) == self.columnLength:
                 row_pos = self.rowCount()
                 self.insertRow(row_pos)
                 for col, value in enumerate(parts):

@@ -22,7 +22,8 @@ class FileViewer(QWidget):
         self.build_table_ui()
         # self.build_search_replace_ui()
         self.build_add_row_ui()
-        self.build_rank_button()
+        self.build_sortBy()
+        self.build_change_background_and_rank_button()
         self.rank_window = None
         self.controller = FileControllerFactory.get_controller("local")
         self.controller.dataChanged.connect(self.sync_table)
@@ -32,7 +33,8 @@ class FileViewer(QWidget):
         selector_layout = QHBoxLayout()
 
         self.source_combo = QComboBox()
-        self.source_combo.addItems(["local", "cloud"])
+        # self.source_combo.addItems(["local", "cloud"])
+        self.source_combo.addItems(["local"])
         self.source_combo.currentTextChanged.connect(self.set_data_source)
 
         self.google_url_input = QLineEdit()
@@ -102,9 +104,11 @@ class FileViewer(QWidget):
         strSort_layout = QHBoxLayout()
 
         self.strSortByComboBox = QComboBox()
-        self.strSortByComboBox.addItems(lambda: self.controller.getFile().columns)
+        # sort_choose = list(self.controller.getFile().columns)
+        # self.strSortByComboBox.addItems(sort_choose)
 
         # 加入欄位到畫面
+        strSort_layout.addWidget(QLabel("排序依據："))
         strSort_layout.addWidget(self.strSortByComboBox)
         self.layout.addLayout(strSort_layout)
 
@@ -112,13 +116,6 @@ class FileViewer(QWidget):
         self.strSortByComboBox.currentTextChanged.connect(
             lambda text: self.controller.setStrSortBy(text)
         )
-
-    def build_rank_button(self):
-        rank_layout = QHBoxLayout()
-        show_rank_btn = QPushButton("顯示排行榜")
-        show_rank_btn.clicked.connect(lambda: self.logic.show_rank_window())
-        rank_layout.addWidget(show_rank_btn)
-        self.layout.addLayout(rank_layout)
 
     def set_data_source(self, source_type):
         if hasattr(self, 'local_btns_layout'):
@@ -150,6 +147,7 @@ class FileViewer(QWidget):
         self.controller = FileControllerFactory.get_controller("cloud", file_id=file_id)
         self.logic = FileLogic(table=self.table, controller=self.controller)
         self.logic.display_csv(self.controller.getFile())
+        self.update_sort_combo()
 
     def handle_create_csv(self):
         from src.gui.file_set_window.input_title import LocalFileInputTitle
@@ -157,15 +155,18 @@ class FileViewer(QWidget):
         if dialog.exec():
             titles = dialog.get_input_text().split(",")
             self.logic.create_csv(titles)
+            self.update_sort_combo()
 
     def handle_load_csv(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "選擇 CSV 檔案", "", "CSV Files (*.csv)")
         if file_path:
             self.logic.load_csv(file_path)
+            self.update_sort_combo()
 
     def handle_add_row(self):
         row = self.add_row_box.text().split(",")
         self.logic.add_row(row)
+        self.add_row_box.clear()
 
     # def handle_search(self):
     #     keyword = self.search_box.text()
@@ -177,11 +178,17 @@ class FileViewer(QWidget):
     # def handle_replace_all(self):
     #     self.logic.replace_all(self.replace_box.text())
         
-    def build_rank_button(self):
+    def build_change_background_and_rank_button(self):
         rank_layout = QHBoxLayout()
+        
+        change_bg_btn = QPushButton("變更排行榜背景")
+        change_bg_btn.clicked.connect(self.handle_change_background)
+        rank_layout.addWidget(change_bg_btn)
+
         show_rank_btn = QPushButton("顯示排行榜")
         show_rank_btn.clicked.connect(self.handle_show_rank)
         rank_layout.addWidget(show_rank_btn)
+        
         self.layout.addLayout(rank_layout)
 
     def handle_show_rank(self):
@@ -189,7 +196,21 @@ class FileViewer(QWidget):
             self.rank_window = RankWindow(self.controller)
         self.rank_window.show()
 
-    def sync_table(self):
-        print(456)
-        self.logic.display_csv(self.controller.getFile())
+    def handle_change_background(self):
+        if self.rank_window is None:
+            self.rank_window = RankWindow(self.controller)
 
+        # 選圖片檔案
+        file_path, _ = QFileDialog.getOpenFileName(self, "選擇背景圖片", "", "Images (*.png *.jpg *.jpeg *.bmp)")
+        if file_path:
+            self.rank_window.update_background(file_path)
+            self.rank_window.show()  # 可選：顯示排行榜視窗
+
+    def sync_table(self):
+        self.logic.display_csv(self.controller.getFile())
+        
+    def update_sort_combo(self):
+        df = self.controller.getFile()
+        if isinstance(df, pd.DataFrame):
+            self.strSortByComboBox.clear()
+            self.strSortByComboBox.addItems(df.columns.tolist())
