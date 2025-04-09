@@ -2,7 +2,7 @@ import sys
 import pandas as pd
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QPushButton, QTableWidget,
-    QHBoxLayout, QLabel, QLineEdit, QTableWidgetItem, QComboBox, QFileDialog
+    QHBoxLayout, QLabel, QLineEdit, QTableWidgetItem, QComboBox, QFileDialog, QMessageBox
 )
 from src.gui.rank_window.rankWindow import RankWindow
 from src.gui.file_set_window.file_logic import FileLogic
@@ -21,13 +21,19 @@ class FileViewer(QWidget):
         self.build_source_selector()
         self.build_table_ui()
         # self.build_search_replace_ui()
-        self.build_add_row_ui()
-        self.build_sortBy()
-        self.build_change_background_and_rank_button()
         self.rank_window = None
         self.controller = FileControllerFactory.get_controller("local")
         self.controller.dataChanged.connect(self.sync_table)
         self.set_data_source("local")
+        self.already_setup_local_setting = False
+        
+    def setup_local_setting(self):
+        if not self.already_setup_local_setting:
+            self.build_add_row_ui()
+            self.build_sortBy()
+            self.build_change_background_and_rank_button()
+            
+            self.already_setup_local_setting = True
         
     def build_source_selector(self):
         selector_layout = QHBoxLayout()
@@ -116,7 +122,8 @@ class FileViewer(QWidget):
         self.strSortByComboBox.currentTextChanged.connect(
             lambda text: self.controller.setStrSortBy(text)
         )
-
+            
+            
     def set_data_source(self, source_type):
         if hasattr(self, 'local_btns_layout'):
             self.layout.removeItem(self.local_btns_layout)
@@ -152,16 +159,31 @@ class FileViewer(QWidget):
     def handle_create_csv(self):
         from src.gui.file_set_window.input_title import LocalFileInputTitle
         dialog = LocalFileInputTitle()
-        if dialog.exec():
+        if dialog.exec() and not(dialog.get_input_text() == ""):
+            if not self.already_setup_local_setting:
+                self.setup_local_setting()
+                self.already_setup_local_setting = True
+            
             titles = dialog.get_input_text().split(",")
             self.logic.create_csv(titles)
             self.update_sort_combo()
 
     def handle_load_csv(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "選擇 CSV 檔案", "", "CSV Files (*.csv)")
-        if file_path:
-            self.logic.load_csv(file_path)
-            self.update_sort_combo()
+        try:
+            if file_path:
+                if not self.already_setup_local_setting:
+                    self.setup_local_setting()
+                    self.already_setup_local_setting = True
+                    
+                self.logic.load_csv(file_path)
+                self.update_sort_combo()
+        except Exception as e:
+            print(f"Error loading CSV file: {e}")
+            message_box = QMessageBox()
+            message_box.setText("無法載入 CSV 檔案，請檢查檔案格式。")
+            message_box.setIcon(QMessageBox.Icon.Warning)
+            message_box.exec()
 
     def handle_add_row(self):
         row = self.add_row_box.text().split(",")

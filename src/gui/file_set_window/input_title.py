@@ -10,7 +10,7 @@ class LocalFileInputTitle(QDialog):
 
         layout = QVBoxLayout()
 
-        self.label = QLabel("請輸入標題（以逗號分隔）\nEX: 標題1, 標題2, 標題3")
+        self.label = QLabel("請輸入標題（以逗號分隔）\ne.g., 標題1,標題2,標題3")
         layout.addWidget(self.label)
 
         self.text_input = QLineEdit(self)

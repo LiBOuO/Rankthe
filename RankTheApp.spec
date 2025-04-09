@@ -5,7 +5,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('src/gui/Background.png', 'src/gui')],
+    datas=[],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -21,7 +21,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='RankTheApp',
+    name='RanktheApp',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -40,11 +40,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='RankTheApp',
-)
-app = BUNDLE(
-    coll,
-    name='RankTheApp.app',
-    icon=None,
-    bundle_identifier=None,
+    name='RanktheApp',
 )

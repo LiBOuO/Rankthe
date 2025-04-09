@@ -15,7 +15,7 @@ from src.gui.rank_window.rank_background import BackgroundWidget
 class RankWindow(BackgroundWidget):
     def __init__(self, controller):
         super().__init__("src/gui/Background.png")
-        self.setWindowTitle("排行榜")
+        self.setWindowTitle("Rank Window")
         self.resize(800, 600)
         self.controller = controller
 
@@ -35,8 +35,8 @@ class RankWindow(BackgroundWidget):
 
         # 新增資料區域
         self.input_box = QLineEdit()
-        self.input_box.setPlaceholderText("請輸入資料，例如：player1, 100")
-        self.add_button = QPushButton("新增資料")
+        self.input_box.setPlaceholderText("Please enter the data and separate them with commas, e.g., Player1,100")
+        self.add_button = QPushButton("Add Data")
         self.add_button.clicked.connect(self.add_row)
 
         input_layout = QHBoxLayout()

@@ -1,7 +1,10 @@
 from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem, QHeaderView
 from PyQt6.QtCore import Qt
 import pandas as pd
+
+
 class RankTableWidget(QTableWidget):
+
     def __init__(self, controller=None):
         super().__init__()
         self.controller = controller
@@ -13,6 +16,7 @@ class RankTableWidget(QTableWidget):
                 background-color: rgba(0, 0, 0, 128);
                 border: none;
                 font-size: 40px;
+                color: white;
             }
             QAbstractScrollArea {
                 background: transparent;
@@ -47,7 +51,7 @@ class RankTableWidget(QTableWidget):
                 height: 0px;
             }
         """)
-        
+
         header = self.horizontalHeader()
         header.setStretchLastSection(True)
         for i in range(self.columnLength):
@@ -58,9 +62,9 @@ class RankTableWidget(QTableWidget):
         if data is None:
             return
         df = pd.DataFrame(data)
-        df = df.groupby(by=self.controller.getStrSortBy()).sum().reset_index()
-        print(df)
-        # df = df.sort_values(by=self.controller.getStrSortBy(), ascending=False)
+        # df = df.groupby(by=self.controller.getStrSortBy()).sum().reset_index()
+        # print(df)
+        df = df.sort_values(by=self.controller.getStrSortBy(), ascending=False)
         self.setRowCount(df.shape[0])
         self.setHorizontalHeaderLabels(df.columns)
 
