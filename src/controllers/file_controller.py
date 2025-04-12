@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QObject
+from PyQt6.QtCore import QObject, pyqtSignal
 from abc import ABCMeta, abstractmethod
 import pandas as pd
 from src.utils.pandas_file_sort import PandasFileSort
@@ -11,10 +11,12 @@ class MetaQObjectABC(type(QObject), ABCMeta):
 
 
 class FileController(QObject, metaclass=MetaQObjectABC):
+    dataChanged = pyqtSignal()  # ✅ 當資料變更時發出的 signal
     def __init__(self):
         super().__init__()
         self.df = None
         self.str_sort_by = "name"
+        self.addRowResult = True
 
     @abstractmethod
     def getFile(self):
@@ -50,12 +52,19 @@ class FileController(QObject, metaclass=MetaQObjectABC):
 
     def addRowAndReturnResult(self, row: Sequence[str]) -> str:
         if self.df is None:
-            return "⚠️ DataFrame 尚未載入"
+            self.setAddRowResult(False)
+        self.setAddRowResult(True)
         try:
             new_row_df = pd.DataFrame([row], columns=self.df.columns)
             self.df = pd.concat([self.df, new_row_df], ignore_index=True)
             self.saveFile()
-            self.data_updated.emit()  # 🔔 通知有更新
-            return "✅ 新增成功"
+            self.dataChanged.emit()  # 🔔 通知有更新
         except Exception as e:
-            return f"❌ 錯誤: {e}"
+            print(f"❌ 新增資料失敗: {e}")
+            self.setAddRowResult(False)
+        
+    def setAddRowResult(self, result: bool):
+        self.addRowResult = result
+        
+    def getAddRowResult(self):
+        return self.addRowResult

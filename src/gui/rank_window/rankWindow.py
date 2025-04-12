@@ -6,7 +6,7 @@
 # 👉 這裡先幫你生成 rank_window.py 的主程式框架：
 
 import sys
-from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton
+from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QMessageBox
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QPixmap, QPainter
 from src.gui.rank_window.rank_table_widget import RankTableWidget
@@ -58,7 +58,18 @@ class RankWindow(BackgroundWidget):
         self.timer.start(100)
 
     def add_row(self):
+        for i in self.input_box.text().split(","):
+            if str(i) == "":
+                QMessageBox.warning(self, "Warning", "Please enter valid data.")
+                return
+        
         self.controller.addRowAndReturnResult(list(self.input_box.text().split(",")))
+        
+        if self.controller.getAddRowResult():
+            QMessageBox.information(self, "Success", "Data added successfully.")
+        else:   
+            QMessageBox.warning(self, "Warning", "Please enter valid data.")
+        
         self.table.load_initial_data()
         self.input_box.clear()
 

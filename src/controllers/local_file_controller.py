@@ -34,15 +34,3 @@ class LocalCSVController(FileController):
     def saveFile(self):
         if self.df is not None:
             self.df.to_csv(self.file_path, index=False)
-
-    def addRowAndReturnResult(self, row: Sequence[str]) -> str:
-        if self.df is None:
-            return "⚠️ DataFrame 尚未載入"
-        try:
-            new_row_df = pd.DataFrame([row], columns=self.df.columns)
-            self.df = pd.concat([self.df, new_row_df], ignore_index=True)
-            self.saveFile()
-            self.dataChanged.emit()  # ✅ 新增後發出 signal
-            return "✅ 新增成功"
-        except Exception as e:
-            return f"❌ 錯誤: {e}"

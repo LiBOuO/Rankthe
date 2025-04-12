@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem, QHeaderView
+from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView
 from PyQt6.QtCore import Qt
 import pandas as pd
 from src.utils.pandas_file_sort import PandasFileSort
@@ -59,6 +59,8 @@ class RankTableWidget(QTableWidget):
         
         self.pandasFileSort = PandasFileSort(self.controller.getFile())
         self.load_initial_data()
+        self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+
 
     def load_initial_data(self):
         data = self.controller.getFile()

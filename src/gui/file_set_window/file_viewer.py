@@ -27,6 +27,8 @@ class FileViewer(QWidget):
         self.set_data_source("local")
         self.already_setup_local_setting = False
         self.background_path = None
+        self.table.cellChanged.connect(self.handle_cell_changed)
+
         
     def setup_local_setting(self):
         if not self.already_setup_local_setting:
@@ -198,6 +200,12 @@ class FileViewer(QWidget):
 
     def handle_add_row(self):
         row = self.add_row_box.text().split(",")
+        
+        for i in row:
+            if str(i) == "":
+                QMessageBox.warning(self, "Warning", "Please enter valid data.")
+                return
+        
         self.logic.add_row(row)
         self.add_row_box.clear()
 
@@ -249,3 +257,20 @@ class FileViewer(QWidget):
         if isinstance(df, pd.DataFrame):
             self.strSortByComboBox.clear()
             self.strSortByComboBox.addItems(df.columns.tolist())
+            
+    def handle_cell_changed(self, row, col):
+        if not hasattr(self, "controller"):
+            return  # 尚未載入資料
+
+        # 抓到欄位名稱
+        column_name = self.table.horizontalHeaderItem(col).text()
+
+        # 抓到新值
+        new_value = self.table.item(row, col).text()
+
+        # ✅ 寫回 DataFrame（注意 index 對應）
+        try:
+            self.controller.df.at[row, column_name] = new_value
+            self.controller.saveFile()  # ✅ 自動儲存 CSV
+        except Exception as e:
+            print(f"⚠️ 寫入資料時出錯：{e}")

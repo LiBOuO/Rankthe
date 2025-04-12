@@ -1,6 +1,6 @@
 # Refactored FileLogic
 import pandas as pd
-from PyQt6.QtWidgets import QTableWidgetItem
+from PyQt6.QtWidgets import QTableWidgetItem, QMessageBox
 from src.gui.file_set_window.table_search_replace import TableSearchReplace
 from src.gui.file_set_window.input_title import LocalFileInputTitle
 from src.gui.rank_window.rankWindow import RankWindow
@@ -21,6 +21,10 @@ class FileLogic:
 
     def add_row(self, row_data: list[str]):
         self.controller.addRowAndReturnResult(row_data)
+        if self.controller.getAddRowResult():
+            QMessageBox.information(None, "Success", "Data added successfully.")
+        else:   
+            QMessageBox.warning(None, "Warning", "Please enter valid data.")
         self.display_csv(self.controller.getFile())
 
     def search(self, keyword: str):
