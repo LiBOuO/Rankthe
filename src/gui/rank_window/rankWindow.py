@@ -13,8 +13,11 @@ from src.gui.rank_window.rank_table_widget import RankTableWidget
 from src.gui.rank_window.rank_background import BackgroundWidget
 
 class RankWindow(BackgroundWidget):
-    def __init__(self, controller):
-        super().__init__("src/gui/Background.png")
+    def __init__(self, controller, image_path: str = "src/gui/Background.png"):
+        if image_path is not None:
+            super().__init__(image_path)
+        else:
+            super().__init__("src/gui/Background.png")
         self.setWindowTitle("Rank Window")
         self.resize(800, 600)
         self.controller = controller

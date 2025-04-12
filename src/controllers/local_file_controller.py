@@ -2,6 +2,7 @@ from PyQt6.QtCore import QObject, pyqtSignal
 import pandas as pd
 from typing import Sequence, Optional
 from .file_controller import FileController
+from src.utils.pandas_file_sort import PandasFileSort
 
 class LocalCSVController(FileController):
     dataChanged = pyqtSignal()  # ✅ 當資料變更時發出的 signal
@@ -19,6 +20,7 @@ class LocalCSVController(FileController):
     def getFile(self):
         if self.df is None:
             return "⚠️ CSV 未建立"
+        self.df.columns = PandasFileSort.deduplicate_columns(self.df.columns)
         return self.df
 
     def loadFile(self, path: Optional[str] = None):

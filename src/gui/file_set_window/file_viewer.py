@@ -26,6 +26,7 @@ class FileViewer(QWidget):
         self.controller.dataChanged.connect(self.sync_table)
         self.set_data_source("local")
         self.already_setup_local_setting = False
+        self.background_path = None
         
     def setup_local_setting(self):
         if not self.already_setup_local_setting:
@@ -157,6 +158,8 @@ class FileViewer(QWidget):
         self.update_sort_combo()
 
     def handle_create_csv(self):
+        if self.rank_window is not None:
+            self.rank_window.close()
         from src.gui.file_set_window.input_title import LocalFileInputTitle
         dialog = LocalFileInputTitle()
         if dialog.exec() and not(dialog.get_input_text() == ""):
@@ -169,21 +172,29 @@ class FileViewer(QWidget):
             self.update_sort_combo()
 
     def handle_load_csv(self):
+        if self.rank_window is not None:
+            self.rank_window.close()
         file_path, _ = QFileDialog.getOpenFileName(self, "選擇 CSV 檔案", "", "CSV Files (*.csv)")
+        if not file_path:
+            return
+
         try:
-            if file_path:
-                if not self.already_setup_local_setting:
-                    self.setup_local_setting()
-                    self.already_setup_local_setting = True
-                    
-                self.logic.load_csv(file_path)
-                self.update_sort_combo()
+            # ✅ 先嘗試讀檔
+            self.logic.load_csv(file_path)
+
+            # ✅ 確保讀取沒問題才設定 layout
+            if not self.already_setup_local_setting:
+                self.setup_local_setting()
+                self.already_setup_local_setting = True
+
+            # ✅ 只有成功才更新欄位
+            self.update_sort_combo()
+
         except Exception as e:
-            print(f"Error loading CSV file: {e}")
-            message_box = QMessageBox()
-            message_box.setText("無法載入 CSV 檔案，請檢查檔案格式。")
-            message_box.setIcon(QMessageBox.Icon.Warning)
-            message_box.exec()
+            print(f"❌ 載入 CSV 錯誤: {e}")
+            QMessageBox.warning(self, "錯誤", "無法載入 CSV，請檢查檔案內容與格式。")
+
+
 
     def handle_add_row(self):
         row = self.add_row_box.text().split(",")
@@ -213,18 +224,20 @@ class FileViewer(QWidget):
         
         self.layout.addLayout(rank_layout)
 
-    def handle_show_rank(self):
-        if self.rank_window is None:
-            self.rank_window = RankWindow(self.controller)
+    def handle_show_rank(self): # 如果已有排行視窗，先將它關閉 
+        if self.rank_window is not None: 
+            self.rank_window.close() # 建立新的排行視窗並顯示 
+        self.rank_window = RankWindow(self.controller, self.background_path) 
         self.rank_window.show()
 
     def handle_change_background(self):
         if self.rank_window is None:
-            self.rank_window = RankWindow(self.controller)
+            self.rank_window = RankWindow(self.controller, self.background_path)
 
         # 選圖片檔案
         file_path, _ = QFileDialog.getOpenFileName(self, "選擇背景圖片", "", "Images (*.png *.jpg *.jpeg *.bmp)")
         if file_path:
+            self.background_path = file_path
             self.rank_window.update_background(file_path)
             self.rank_window.show()  # 可選：顯示排行榜視窗
 

@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QTableWidget, QTableWidgetItem, QHeaderView
 from PyQt6.QtCore import Qt
 import pandas as pd
-
+from src.utils.pandas_file_sort import PandasFileSort
 
 class RankTableWidget(QTableWidget):
 
@@ -56,15 +56,16 @@ class RankTableWidget(QTableWidget):
         header.setStretchLastSection(True)
         for i in range(self.columnLength):
             header.setSectionResizeMode(i, QHeaderView.ResizeMode.Stretch)
+        
+        self.pandasFileSort = PandasFileSort(self.controller.getFile())
+        self.load_initial_data()
 
     def load_initial_data(self):
         data = self.controller.getFile()
         if data is None:
             return
-        df = pd.DataFrame(data)
-        # df = df.groupby(by=self.controller.getStrSortBy()).sum().reset_index()
-        # print(df)
-        df = df.sort_values(by=self.controller.getStrSortBy(), ascending=False)
+        df = data
+        df = self.pandasFileSort.sort(df, by=self.controller.getStrSortBy(), ascending=False)
         self.setRowCount(df.shape[0])
         self.setHorizontalHeaderLabels(df.columns)
 
@@ -73,6 +74,7 @@ class RankTableWidget(QTableWidget):
                 item = QTableWidgetItem(str(df.iat[row, col]))
                 item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 self.setItem(row, col, item)
+
 
         self.resizeRowsToContents()
 
@@ -86,4 +88,7 @@ class RankTableWidget(QTableWidget):
                     item = QTableWidgetItem(value)
                     item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                     self.setItem(row_pos, col, item)
+                    
+                df = self.pandasFileSort.sort(df, by=self.controller.getStrSortBy(), ascending=False)
+                
                 self.resizeRowsToContents()
