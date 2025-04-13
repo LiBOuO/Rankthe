@@ -9,8 +9,8 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.dist/
-.build/
+dist/
+build/
 
 # 忽略虛擬環境
 .venv/
